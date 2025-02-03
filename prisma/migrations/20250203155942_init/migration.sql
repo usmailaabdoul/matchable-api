@@ -1,15 +1,24 @@
 -- CreateEnum
-CREATE TYPE "SessionType" AS ENUM ('PADEL', 'fitness', 'TENNIS');
+CREATE TYPE "SessionType" AS ENUM ('PADEL', 'FITNESS', 'TENNIS');
+
+-- CreateTable
+CREATE TABLE "Trainer" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "specialty" TEXT NOT NULL,
+
+    CONSTRAINT "Trainer_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Session" (
     "id" TEXT NOT NULL,
     "type" "SessionType" NOT NULL,
+    "duration" INTEGER NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
     "startTime" TIMESTAMP(3) NOT NULL,
-    "endTime" TIMESTAMP(3) NOT NULL,
-    "trainer" TEXT NOT NULL,
-    "price" DECIMAL(65,30) NOT NULL,
-    "capacity" INTEGER NOT NULL,
+    "trainerId" TEXT NOT NULL,
+    "isBooked" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
 );
@@ -17,9 +26,10 @@ CREATE TABLE "Session" (
 -- CreateTable
 CREATE TABLE "Booking" (
     "id" TEXT NOT NULL,
-    "userName" TEXT NOT NULL,
+    "clientName" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
+    "totalCost" DOUBLE PRECISION NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Booking_pkey" PRIMARY KEY ("id")
@@ -35,6 +45,9 @@ CREATE TABLE "_BookingToSession" (
 
 -- CreateIndex
 CREATE INDEX "_BookingToSession_B_index" ON "_BookingToSession"("B");
+
+-- AddForeignKey
+ALTER TABLE "Session" ADD CONSTRAINT "Session_trainerId_fkey" FOREIGN KEY ("trainerId") REFERENCES "Trainer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_BookingToSession" ADD CONSTRAINT "_BookingToSession_A_fkey" FOREIGN KEY ("A") REFERENCES "Booking"("id") ON DELETE CASCADE ON UPDATE CASCADE;

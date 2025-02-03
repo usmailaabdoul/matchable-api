@@ -1,26 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import {
-  ArrayNotEmpty,
-  IsArray,
-  IsEmail,
-  IsString,
-  Length,
-} from 'class-validator';
+import { IsArray, IsEmail, IsNumber, IsString } from 'class-validator';
 
 export class CreateBookingDto {
-  @IsArray()
-  @ArrayNotEmpty()
-  sessionIds: string[];
-
   @IsString()
-  @Length(2, 50)
-  userName: string;
-  /**
-   * @example "johndoe@gmail.com"
-   */
+  clientName: string;
+
   @IsEmail()
   email: string;
 
   @IsString()
   phone: string;
+
+  @IsArray()
+  sessionIds: string[];
+
+  @IsNumber()
+  totalCost: number;
 }

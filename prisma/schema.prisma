@@ -19,23 +19,33 @@ enum SessionType {
   TENNIS
 }
 
-// schema.prisma
+model Trainer {
+  id        String    @id @default(cuid())
+  name      String
+  specialty String
+  sessions  Session[]
+}
+
 model Session {
-  id          String   @id @default(uuid())
+  id          String    @id @default(cuid())
   type        SessionType
+  duration    Int       // in minutes
+  price       Float
   startTime   DateTime
-  endTime     DateTime
-  trainer     String
-  price       Decimal
-  capacity    Int
-  bookings    Booking[]
+  trainer     Trainer   @relation(fields: [trainerId], references: [id])
+  trainerId   String
+  isBooked    Boolean   @default(false)
+
+
+  Booking Booking[]
 }
 
 model Booking {
-  id        String   @id @default(uuid())
-  sessions  Session[]
-  userName  String
-  email     String
-  phone     String
-  createdAt DateTime @default(now())
+  id         String    @id @default(cuid())
+  clientName String
+  email      String
+  phone      String
+  sessions   Session[]
+  totalCost  Float
+  createdAt  DateTime  @default(now())
 }

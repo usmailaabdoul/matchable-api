@@ -6,18 +6,15 @@ export class CreateSessionDto {
   @IsEnum(SessionType)
   type: SessionType;
 
-  @IsDate()
-  startTime: Date;
-
-  @IsDate()
-  endTime: Date;
-
-  @IsString()
-  trainer: string;
+  @IsNumber()
+  duration: number;
 
   @IsNumber()
   price: number;
 
-  @IsNumber()
-  capacity: number;
+  @IsDate()
+  startTime: Date;
+
+  @IsString()
+  trainerId: string;
 }
