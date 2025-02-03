@@ -7,7 +7,6 @@ export class BookingsService {
   constructor(private prisma: PrismaService) {}
 
   async createBooking(data: CreateBookingDto) {
-    // Check session availability
     const sessions = await this.prisma.session.findMany({
       where: {
         id: { in: data.sessionIds },

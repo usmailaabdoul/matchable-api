@@ -21,14 +21,4 @@ export class SessionsService {
       },
     });
   }
-
-  // async sessions(where: Prisma.SessionWhereInput): Promise<Session[]> {
-  //   return this.prisma.session.findMany({ where });
-  // }
-
-  // async createSession(data: CreateSessionDto) {
-  //   return this.prisma.session.create({
-  //     data,
-  //   });
-  // }
 }
