@@ -6,11 +6,6 @@ import { CreateBookingDto } from 'src/dto/create-book.dto';
 export class BookingsController {
   constructor(private readonly bookingsService: BookingsService) {}
 
-  // @Post()
-  // async createBooking(@Body() bookingData: CreateBookingDto): Promise<Booking> {
-  //   return this.bookingsService.createBooking(bookingData);
-  // }
-
   @Post()
   createBooking(@Body() createBookingDto: CreateBookingDto) {
     return this.bookingsService.createBooking(createBookingDto);
