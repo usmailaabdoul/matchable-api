@@ -11,6 +11,9 @@ $ npm install
 ## Compile and run the project
 
 ```bash
+# DB init
+$ npx prisma generate
+
 # DB migration
 $ npx prisma migrate dev
 
@@ -20,6 +23,6 @@ $ npm run seed
 # To start the dev development
 $ npm run start
 
-# production mode
-$ npm run start:prod
+# build
+$ npm run build
 ```
