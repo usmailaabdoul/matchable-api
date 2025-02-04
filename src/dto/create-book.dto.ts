@@ -1,5 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-import { IsArray, IsEmail, IsNumber, IsString } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsEmail,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 export class CreateBookingDto {
   @IsString()
@@ -12,7 +17,12 @@ export class CreateBookingDto {
   phone: string;
 
   @IsArray()
-  sessionIds: string[];
+  @IsString({ each: true })
+  @ArrayMinSize(1)
+  trainerAvailabilityIds: string[];
+
+  @IsString()
+  durationId: string;
 
   @IsNumber()
   totalCost: number;

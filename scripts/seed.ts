@@ -1,108 +1,112 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  try {
-    await prisma.$transaction(async (tx) => {
-      await tx.trainer.createMany({
-        data: [
-          { name: 'Bryan', specialty: 'FITNESS' },
-          { name: 'Rachel', specialty: 'TENNIS' },
-          { name: 'John', specialty: 'PADEL' },
-        ],
-      });
+  // Clean existing data
+  await prisma.booking.deleteMany();
+  await prisma.trainerAvailability.deleteMany();
+  await prisma.timeSlot.deleteMany();
+  await prisma.duration.deleteMany();
+  await prisma.session.deleteMany();
+  await prisma.trainer.deleteMany();
 
-      const createdTrainers = await tx.trainer.findMany();
+  // Create trainers
+  const trainers = await Promise.all([
+    prisma.trainer.create({
+      data: { name: 'John Doe', specialty: 'FITNESS' },
+    }),
+    prisma.trainer.create({
+      data: { name: 'Jane Smith', specialty: 'TENNIS' },
+    }),
+    prisma.trainer.create({
+      data: { name: 'Mike Johnson', specialty: 'PADEL' },
+    }),
+  ]);
 
-      if (!createdTrainers) throw new Error('No trainers found');
+  // Create sessions with durations and time slots
+  const sessions = await Promise.all([
+    // Fitness Session
+    prisma.session.create({
+      data: {
+        type: 'FITNESS',
+        durations: {
+          create: [
+            { minutes: 30, price: 40 },
+            { minutes: 60, price: 70 },
+            { minutes: 90, price: 100 },
+          ],
+        },
+      },
+    }),
+    // Tennis Session
+    prisma.session.create({
+      data: {
+        type: 'TENNIS',
+        durations: {
+          create: [
+            { minutes: 60, price: 80 },
+            { minutes: 90, price: 110 },
+          ],
+        },
+      },
+    }),
+    // Padel Session
+    prisma.session.create({
+      data: {
+        type: 'PADEL',
+        durations: {
+          create: [
+            { minutes: 60, price: 75 },
+            { minutes: 90, price: 100 },
+          ],
+        },
+      },
+    }),
+  ]);
 
-      console.log({ createdTrainers });
+  // Create time slots for next 7 days
+  const timeSlots = [];
+  for (let i = 0; i < 7; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() + i);
 
-      await tx.session.createMany({
-        data: [
-          {
-            type: 'FITNESS',
-            duration: 60,
-            price: 50,
-            startTime: new Date('2025-02-15T10:00:00Z'),
-            trainerId:
-              createdTrainers.find((t) => t.name === 'Bryan')?.id ?? '',
-            isBooked: false,
-          },
-          {
-            type: 'FITNESS',
-            duration: 45,
-            price: 40,
-            startTime: new Date('2025-02-16T14:00:00Z'),
-            trainerId:
-              createdTrainers.find((t) => t.name === 'Bryan')?.id ?? '',
-            isBooked: false,
-          },
-          {
-            type: 'TENNIS',
-            duration: 90,
-            price: 75,
-            startTime: new Date('2025-02-17T11:00:00Z'),
-            trainerId:
-              createdTrainers.find((t) => t.name === 'Rachel')?.id ?? '',
-            isBooked: false,
-          },
-          {
-            type: 'PADEL',
-            duration: 60,
-            price: 55,
-            startTime: new Date('2025-02-18T16:00:00Z'),
-            trainerId: createdTrainers.find((t) => t.name === 'John')?.id ?? '',
-            isBooked: false,
-          },
-          {
-            type: 'FITNESS',
-            duration: 60,
-            price: 50,
-            startTime: new Date('2025-02-15T10:00:00Z'),
-            trainerId:
-              createdTrainers.find((t) => t.name === 'Bryan')?.id ?? '',
-            isBooked: false,
-          },
-          {
-            type: 'FITNESS',
-            duration: 45,
-            price: 40,
-            startTime: new Date('2025-02-16T14:00:00Z'),
-            trainerId:
-              createdTrainers.find((t) => t.name === 'Bryan')?.id ?? '',
-            isBooked: false,
-          },
-          {
-            type: 'TENNIS',
-            duration: 90,
-            price: 75,
-            startTime: new Date('2025-02-17T11:00:00Z'),
-            trainerId:
-              createdTrainers.find((t) => t.name === 'Rachel')?.id ?? '',
-            isBooked: false,
-          },
-          {
-            type: 'PADEL',
-            duration: 60,
-            price: 55,
-            startTime: new Date('2025-02-18T16:00:00Z'),
-            trainerId: createdTrainers.find((t) => t.name === 'John')?.id ?? '',
-            isBooked: false,
-          },
-        ],
-      });
+    // Create slots from 9 AM to 5 PM
+    for (let hour = 9; hour < 17; hour++) {
+      date.setHours(hour, 0, 0, 0);
 
-      console.log('Seeding completed successfully');
-    });
-  } catch (error) {
-    console.log('Failed to see data', error);
+      for (const session of sessions) {
+        const timeSlot = await prisma.timeSlot.create({
+          data: {
+            sessionId: session.id,
+            startTime: new Date(date),
+          },
+        });
+        timeSlots.push(timeSlot);
+      }
+    }
   }
+
+  // Create trainer availability for time slots
+  for (const timeSlot of timeSlots) {
+    const session = sessions.find((s) => s.id === timeSlot.sessionId);
+    const relevantTrainers = trainers.filter(
+      (t) => t.specialty === session?.type || t.specialty === 'FITNESS',
+    );
+
+    for (const trainer of relevantTrainers) {
+      await prisma.trainerAvailability.create({
+        data: {
+          trainerId: trainer.id,
+          timeSlotId: timeSlot.id,
+          isBooked: false,
+        },
+      });
+    }
+  }
+
+  console.log('Seed data created successfully');
 }
 
 main()

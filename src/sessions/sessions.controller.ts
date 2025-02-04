@@ -11,8 +11,8 @@ export class SessionsController {
     return this.sessionsService.getAllSessions();
   }
 
-  @Post()
-  createSession(@Body() createSessionDto: CreateSessionDto) {
-    return this.sessionsService.createSession(createSessionDto);
-  }
+  // @Post()
+  // createSession(@Body() createSessionDto: CreateSessionDto) {
+  //   return this.sessionsService.createSession(createSessionDto);
+  // }
 }
